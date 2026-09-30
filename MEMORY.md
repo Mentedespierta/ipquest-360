@@ -102,20 +102,40 @@ LOVABLE/
 
 ## 5. MÓDULOS PEDAGÓGICOS IMPLEMENTADOS
 
-1. **CrossIP (Matriz de Restricciones cruzadas):**
-   - Inspirado en la lógica matricial tipo CrossMath.
-   - Restricciones simultáneas en filas (e.g. Naturaleza de la invención, Exclusiones de patentabilidad) y columnas (Materia protegible, Duración de derechos).
-   - Retroalimentación visual inmediata: resplandor esmeralda (`#10b981`) para coincidencias válidas, alerta ámbar/rosa para contradicciones normativas, barra de coherencia sistémica y ganancia de XP.
+1. **Hero Section Modular (Estándar Design Rocket / designrocket.io):**
+   - Eyebrow badge interactivo con pulso en vivo (`CITT · CONQUITO`).
+   - Titular H1 de alto impacto, propuesta de valor y doble CTA de conversión rápida.
+   - Bento-Grid interactivo integrado con 4 bloques atómicos: Nota Oficial en vivo (10.0), Crossmath, Tug of War y Ficha de Estudiante.
+   - Trust strip inferior con soporte normativo (Decisión 486, 351 y COESCOP).
 
-2. **Trophy UI & Sistema de Insignias:**
+2. **Crossmath Numérico de Plazos y Métricas de PI (Inspirado en Imagen 3):**
+   - Malla interactiva de nodos circulares interconectados por operadores (`+`, `-`, `×`, `/`, `=`).
+   - Ecuaciones matemáticas reales aplicadas a plazos de patentes (20 años), modelos de utilidad (10 años), clases de Niza (45 clases), meses de gracia (12 meses) y niveles TRL (1 a 9).
+   - Teclado táctil en pantalla y validación simultánea horizontal/vertical con dictamen jurídico.
+
+3. **Tug of War: Duelo de Competencias y Tracción (Inspirado en Imagen 2):**
+   - Reto en vivo: Equipo Alumno (Azul) vs. Equipo Rival CITT / IA (Rojo).
+   - Cuerda física con pañuelo indicador que se desplaza hacia la izquierda con aciertos rápidos o a la derecha con fallos.
+   - Temporizador contrarreloj de 40s y teclado numérico táctil en pantalla.
+
+4. **Fichas Temáticas de Conocimiento Paralelo (KnowledgeBase):**
+   - Explicación teórica profunda y previa a la evaluación para los 6 dominios normativos.
+   - Artículos clave, conceptos diferenciales, errores frecuentes y casos prácticos reales.
+
+5. **CrossIP (Matriz de Restricciones cruzadas):**
+   - Matriz de coherencia jurídica entre Activo Intangible, Mecanismo Legal, Requisito y Efecto.
+
+6. **Trophy UI & Sistema de Insignias (Inspirado en Imágenes 1 y 4):**
    - 5 insignias activas: Branding Shield, Copyright Vanguard, Trade Secret Sentinel, Patent Navigator, Master IAM 360.
-   - Vinculadas a las 15 competencias clave (C1 a C15) de la preparación para el Mes 7 (IQ Protege).
+   - Panel de los 5 pilares de gamificación: Nivel, Avatar, Control D-Pad, Objetivos y Premios.
 
-3. **IAM-360 Lab (Diagnóstico de Activos Intangibles):**
-   - Inventario interactivo de activos (marcas, patentes, know-how, software).
-   - Cálculo automático del nivel de madurez de activos intangibles (**IARL 1 a 9**).
-   - Semáforo de riesgo jurídico contractual (NDA, titularidad de cesiones, no infracción FTO).
-   - Generación de **Reporte Técnico Oficial de Diagnóstico en PDF** (listo para anexar como evidencia de aprendizaje según Estándar Oro CONQUITO).
+7. **Sistema de Calificación Oficial Ponderada sobre 10.0 Puntos:**
+   - Desglose transparente: Microaprendizaje (3.0 pts), Crucigramas Lógicos (3.0 pts), Duelo Tug of War (2.0 pts) y Laboratorio IAM-360 (2.0 pts).
+   - Registro de estudiante (Nombres, Cédula, Institución).
+   - Código de verificación criptográfico (`CITT-VAL-XXXXXXXX`) y reporte oficial imprimible para docente.
+
+8. **IAM-360 Lab (Diagnóstico de Activos Intangibles):**
+   - Inventario interactivo de activos, madurez IARL 1-9 y matriz de mitigación de riesgos.
 
 ---
 
@@ -136,13 +156,6 @@ git status
 
 # Desplegar cambios a producción (Vercel despliega automáticamente al detectar push)
 git add .
-git commit -m "feat: actualizacion de contenido"
+git commit -m "feat: Hero Section modular, Crossmath, Tug of War y Calificacion 10.0"
 git push origin main
 ```
-
----
-
-## 7. BACKLOG / PRÓXIMOS PASOS IDENTIFICADOS
-1. **Nuevos Niveles de CrossIP:** Expandir los datasets en `src/lib/crossipData.ts` para cubrir desafíos de Biotecnología, Variedades Vegetales y Licenciamiento Franquicias.
-2. **Sincronización en la Nube:** Opcional integración con Supabase para almacenamiento de puntuaciones de aula multi-usuario.
-3. **Módulo de Evaluación para Docente:** Vista especial para el instructor que permita descargar la sábana consolidada de calificaciones de los estudiantes para el Informe Final del Mes 7.

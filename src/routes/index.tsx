@@ -4,33 +4,42 @@ import { DOMINIOS, OBJETOS, PERFILES, XP_POR_NIVEL, type Objeto, type Perfil } f
 import {
   dominioPct,
   estaDesbloqueado,
-  etiquetaRepaso,
   nivel,
   pendientesRepaso,
   registrarRespuesta,
   completarTableroCrossIP,
+  completarCrossmath,
+  registrarResultadoDuelo,
+  actualizarDatosEstudiante,
+  calcularNotaDetallada,
   useProgreso,
-  xpEnNivel,
   rangoTitulo,
 } from "@/lib/progress";
 import { CrossIPGame } from "@/components/CrossIPGame";
+import { CrossmathGame } from "@/components/CrossmathGame";
+import { TugOfWarGame } from "@/components/TugOfWarGame";
 import { BadgeShowcase } from "@/components/BadgeShowcase";
 import { IAM360Lab } from "@/components/IAM360Lab";
+import { InfoSection } from "@/components/InfoSection";
+import { KnowledgeBase } from "@/components/KnowledgeBase";
+import { GamificationPillars } from "@/components/GamificationPillars";
+import { GradeEvaluationReport } from "@/components/GradeEvaluationReport";
+import { HeroSection } from "@/components/HeroSection";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "IP QUEST 360 · Serious Game & IAM Lab · Transfertech" },
+      { title: "IP QUEST 360 · Serious Game & CITT Lab · CONQUITO" },
       {
         name: "description",
         content:
-          "Serious learning game para dominar propiedad intelectual, signos distintivos, derechos de autor, patentes, FTO y gestión de activos intangibles.",
+          "Serious learning game para dominar propiedad intelectual, signos distintivos, derechos de autor, patentes, FTO, TRL y gestión de activos intangibles con evaluación sobre 10 puntos.",
       },
       { property: "og:title", content: "IP QUEST 360 · Motor de aprendizaje en Propiedad Intelectual" },
       {
         property: "og:description",
         content:
-          "CrossIP matricial, microaprendizaje, insignias de competencia Trophy UI y laboratorio IAM-360 para emprendedores.",
+          "CrossIP matricial, Crossmath numérico, Duelo Tug of War, fichas temáticas y laboratorio IAM-360 con calificación oficial ponderada sobre 10.",
       },
       { property: "og:type", content: "website" },
     ],
@@ -48,9 +57,20 @@ function Orbes() {
   );
 }
 
+type PestañaPrincipal =
+  | "info"
+  | "fichas"
+  | "crucigramas"
+  | "duelo"
+  | "misiones"
+  | "iam360"
+  | "calificacion"
+  | "badges";
+
 function Index() {
   const { estado, listo, actualizar } = useProgreso();
-  const [pestañaActiva, setPestañaActiva] = useState<"crossip" | "misiones" | "badges" | "iam360">("crossip");
+  const [pestañaActiva, setPestañaActiva] = useState<PestañaPrincipal>("info");
+  const [subPestañaCrucigramas, setSubPestañaCrucigramas] = useState<"crossmath" | "crossip">("crossmath");
   const [dominioActivo, setDominioActivo] = useState("D06");
   const [indice, setIndice] = useState(0);
   const [elegida, setElegida] = useState<number | null>(null);
@@ -58,8 +78,8 @@ function Index() {
   const dominio = DOMINIOS.find((d) => d.id === dominioActivo) ?? DOMINIOS[0]!;
   const pregunta = dominio.preguntas[indice % dominio.preguntas.length]!;
 
-  const repasos = useMemo(() => pendientesRepaso(estado), [estado]);
   const desbloqueados = DOMINIOS.filter((d) => estaDesbloqueado(estado, d.id)).length;
+  const evaluacion = useMemo(() => calcularNotaDetallada(estado), [estado]);
 
   function responder(i: number) {
     if (elegida !== null) return;
@@ -76,6 +96,7 @@ function Index() {
     setDominioActivo(id);
     setIndice(0);
     setElegida(null);
+    setPestañaActiva("misiones");
   }
 
   if (!listo) {
@@ -83,136 +104,306 @@ function Index() {
   }
 
   if (!estado.perfil || !estado.objeto) {
-    return <Onboarding onListo={(perfil, objeto) => actualizar((p) => ({ ...p, perfil, objeto }))} />;
+    return (
+      <Onboarding
+        onListo={(nombreEstudiante, identificacion, institucion, perfil, objeto) =>
+          actualizar((p) =>
+            actualizarDatosEstudiante(p, {
+              nombreEstudiante,
+              identificacion,
+              institucion,
+              perfil,
+              objeto,
+            })
+          )
+        }
+      />
+    );
   }
 
-  const iniciales = estado.perfil.slice(0, 2).toUpperCase();
+  const iniciales = (estado.nombreEstudiante
+    ? estado.nombreEstudiante.slice(0, 2)
+    : estado.perfil.slice(0, 2)
+  ).toUpperCase();
   const lvl = nivel(estado.xp);
   const rango = rangoTitulo(lvl);
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50/60 pb-16">
       <Orbes />
 
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-6 space-y-6">
         {/* NAV PRINCIPAL DE ALTO IMPACTO */}
-        <nav className="glass flex flex-wrap items-center justify-between gap-4 rounded-3xl px-6 py-4 shadow-xl shadow-brand/10 border border-white/70">
+        <nav className="glass flex flex-wrap items-center justify-between gap-4 rounded-3xl px-6 py-4 shadow-xl shadow-brand/10 border border-white/80">
+          {/* LOGO E IDENTIDAD INSTITUCIONAL */}
           <div className="flex items-center gap-3">
             <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-brand via-violet-600 to-accent-cyan font-display text-xl font-extrabold text-white shadow-md shadow-brand/30">
               IP
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-display leading-none font-extrabold tracking-tight text-ink text-base">
+                <p className="font-display leading-none font-black tracking-tight text-ink text-base">
                   IP QUEST 360
                 </p>
                 <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[9px] font-extrabold text-brand uppercase tracking-wider">
-                  Transfertech IP Value
+                  CITT · CONQUITO
                 </span>
               </div>
               <p className="text-[11px] text-ink-mute font-medium mt-0.5">
-                Serious Learning Game & Intangible Asset Management Lab
+                Serious Learning Game & Laboratorio de Intangibles
               </p>
             </div>
           </div>
 
-          {/* SELECTOR DE PESTAÑAS PRINCIPALES */}
-          <div className="flex items-center gap-1.5 rounded-2xl bg-white/80 p-1.5 border border-slate-200/60 shadow-inner">
-            <button
-              type="button"
-              onClick={() => setPestañaActiva("crossip")}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
-                pestañaActiva === "crossip"
-                  ? "bg-gradient-to-r from-violet-600 to-brand text-white shadow-md shadow-brand/20 scale-105"
-                  : "text-ink-soft hover:bg-slate-100"
-              }`}
-            >
-              🧩 CrossIP Lab
-            </button>
+          {/* BADGE DE CALIFICACIÓN OFICIAL EN VIVO (SOBRE 10 PUNTOS) */}
+          <button
+            type="button"
+            onClick={() => setPestañaActiva("calificacion")}
+            className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 px-4 py-2 border border-emerald-500/30 hover:bg-emerald-50 transition-all shadow-sm"
+          >
+            <span className="text-base">⭐</span>
+            <div className="text-left">
+              <p className="text-[10px] uppercase font-black text-emerald-800 tracking-wider">
+                Calificación Oficial
+              </p>
+              <p className="font-display text-xs font-black text-emerald-950">
+                {evaluacion.notaFinal.toFixed(2)} / 10.0 ({evaluacion.equivalenciaCualitativa})
+              </p>
+            </div>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => setPestañaActiva("misiones")}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
-                pestañaActiva === "misiones"
-                  ? "bg-brand text-brand-foreground shadow-md shadow-brand/20 scale-105"
-                  : "text-ink-soft hover:bg-slate-100"
-              }`}
-            >
-              📚 Microaprendizaje
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPestañaActiva("badges")}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
-                pestañaActiva === "badges"
-                  ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20 scale-105"
-                  : "text-ink-soft hover:bg-slate-100"
-              }`}
-            >
-              🏆 Trofeos ({estado.badgesDesbloqueados.length})
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPestañaActiva("iam360")}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
-                pestañaActiva === "iam360"
-                  ? "bg-slate-900 text-white shadow-md scale-105"
-                  : "text-ink-soft hover:bg-slate-100"
-              }`}
-            >
-              📊 Diagnóstico IAM-360
-            </button>
-          </div>
-
-          {/* ESTADÍSTICAS RÁPIDAS DEL ALUMNO */}
-          <div className="flex items-center gap-4">
+          {/* ESTADÍSTICAS RÁPIDAS DEL ALUMNO & AVATAR */}
+          <div className="flex items-center gap-3.5">
             <div className="text-right hidden sm:block">
               <p className="text-[10px] uppercase font-bold tracking-wider text-ink-mute">Racha</p>
-              <p className="font-display text-sm font-bold text-ink">
+              <p className="font-display text-xs font-bold text-ink">
                 {estado.racha} {estado.racha === 1 ? "día" : "días"} 🔥
               </p>
             </div>
 
-            <div className="text-right">
+            <div className="text-right hidden sm:block">
               <p className="text-[10px] uppercase font-bold tracking-wider text-ink-mute">XP</p>
-              <p className="font-display text-sm font-extrabold text-brand">
+              <p className="font-display text-xs font-extrabold text-brand">
                 {estado.xp.toLocaleString("es-CO")}
               </p>
             </div>
 
             <div
-              title={`${rango} - Nivel ${lvl}`}
-              className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-brand via-violet-600 to-accent-cyan font-bold text-white shadow-md shadow-brand/20 cursor-pointer"
+              onClick={() => setPestañaActiva("calificacion")}
+              title={`${estado.nombreEstudiante || estado.perfil} · ${rango} (Nivel ${lvl}) - Clic para ver ficha`}
+              className="flex items-center gap-2 rounded-2xl bg-white/80 p-1.5 border border-slate-200 shadow-sm cursor-pointer hover:bg-white transition-all"
             >
-              {iniciales}
+              <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-brand via-violet-600 to-accent-cyan font-bold text-xs text-white shadow-sm">
+                {iniciales}
+              </div>
+              <div className="text-left pr-2 hidden md:block">
+                <p className="text-xs font-bold text-slate-800 line-clamp-1 max-w-[120px]">
+                  {estado.nombreEstudiante || estado.perfil}
+                </p>
+                <p className="text-[10px] text-slate-500">Nivel {lvl} · {rango.split("/")[0]}</p>
+              </div>
             </div>
           </div>
         </nav>
 
+        {/* SELECTOR DE PESTAÑAS INTEGRAL */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <button
+            type="button"
+            onClick={() => setPestañaActiva("info")}
+            className={`whitespace-nowrap rounded-2xl px-4 py-2 text-xs font-bold transition-all ${
+              pestañaActiva === "info"
+                ? "bg-slate-900 text-white shadow-md shadow-slate-900/20 scale-102"
+                : "glass text-ink-soft hover:bg-white"
+            }`}
+          >
+            🚀 Inicio & Hero
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPestañaActiva("fichas")}
+            className={`whitespace-nowrap rounded-2xl px-4 py-2 text-xs font-bold transition-all ${
+              pestañaActiva === "fichas"
+                ? "bg-brand text-brand-foreground shadow-md shadow-brand/20 scale-102"
+                : "glass text-ink-soft hover:bg-white"
+            }`}
+          >
+            📖 Fichas Temáticas
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPestañaActiva("crucigramas")}
+            className={`whitespace-nowrap rounded-2xl px-4 py-2 text-xs font-bold transition-all ${
+              pestañaActiva === "crucigramas"
+                ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20 scale-102"
+                : "glass text-ink-soft hover:bg-white"
+            }`}
+          >
+            🧩 Crucigramas (CrossIP & Crossmath)
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPestañaActiva("duelo")}
+            className={`whitespace-nowrap rounded-2xl px-4 py-2 text-xs font-bold transition-all ${
+              pestañaActiva === "duelo"
+                ? "bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-md shadow-blue-500/20 scale-102"
+                : "glass text-ink-soft hover:bg-white"
+            }`}
+          >
+            ⚔️ Duelo Tug of War
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPestañaActiva("misiones")}
+            className={`whitespace-nowrap rounded-2xl px-4 py-2 text-xs font-bold transition-all ${
+              pestañaActiva === "misiones"
+                ? "bg-violet-600 text-white shadow-md shadow-violet-500/20 scale-102"
+                : "glass text-ink-soft hover:bg-white"
+            }`}
+          >
+            📚 Cuestionario Diagnóstico
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPestañaActiva("iam360")}
+            className={`whitespace-nowrap rounded-2xl px-4 py-2 text-xs font-bold transition-all ${
+              pestañaActiva === "iam360"
+                ? "bg-purple-700 text-white shadow-md shadow-purple-500/20 scale-102"
+                : "glass text-ink-soft hover:bg-white"
+            }`}
+          >
+            📊 Laboratorio IAM-360
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPestañaActiva("calificacion")}
+            className={`whitespace-nowrap rounded-2xl px-4 py-2 text-xs font-bold transition-all ${
+              pestañaActiva === "calificacion"
+                ? "bg-gradient-to-r from-amber-500 to-emerald-600 text-white shadow-md shadow-emerald-500/20 scale-102"
+                : "glass text-ink-soft hover:bg-white font-extrabold"
+            }`}
+          >
+            📋 Calificación (10.0) & Registro
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPestañaActiva("badges")}
+            className={`whitespace-nowrap rounded-2xl px-4 py-2 text-xs font-bold transition-all ${
+              pestañaActiva === "badges"
+                ? "bg-amber-500 text-white shadow-md shadow-amber-500/20 scale-102"
+                : "glass text-ink-soft hover:bg-white"
+            }`}
+          >
+            🏆 Trofeos ({estado.badgesDesbloqueados.length})
+          </button>
+        </div>
+
         {/* CONTENIDO SEGÚN LA PESTAÑA SELECCIONADA */}
-        <div className="mt-8">
-          {/* PESTAÑA 1: CROSSIP LAB */}
-          {pestañaActiva === "crossip" && (
-            <div className="space-y-6">
-              <CrossIPGame
-                tablerosResueltos={estado.tablerosResueltos}
-                onCompletarTablero={(tableroId, xp, badgeId) => {
-                  actualizar((prev) => completarTableroCrossIP(prev, tableroId, xp, badgeId));
-                }}
+        <div className="mt-4">
+          {/* PESTAÑA: INICIO, HERO & MARCO PEDAGÓGICO */}
+          {pestañaActiva === "info" && (
+            <div className="space-y-8">
+              <HeroSection
+                estado={estado}
+                evaluacion={evaluacion}
+                onEmpezar={() => setPestañaActiva("crucigramas")}
+                onNavegar={(p) => setPestañaActiva(p)}
+                onEditarPerfil={() => setPestañaActiva("calificacion")}
+              />
+              <InfoSection
+                onIrAprender={() => setPestañaActiva("fichas")}
+                onIrEvaluacion={() => setPestañaActiva("calificacion")}
               />
             </div>
           )}
 
-          {/* PESTAÑA 2: MICROAPRENDIZAJE Y MISIONES */}
+          {/* PESTAÑA: FICHAS TEMÁTICAS PARALELAS */}
+          {pestañaActiva === "fichas" && (
+            <KnowledgeBase onIrAlDominio={abrirDominio} />
+          )}
+
+          {/* PESTAÑA: CRUCIGRAMAS (SUB-PESTAÑAS ENTRE CROSSMATH E IMAGEN 3 Y CROSSIP) */}
+          {pestañaActiva === "crucigramas" && (
+            <div className="space-y-6">
+              {/* SUB-NAV ENTRE CRUCIGRAMA MATEMÁTICO (IMAGEN 3) Y CRUCIGRAMA MATRICIAL */}
+              <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSubPestañaCrucigramas("crossmath")}
+                    className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                      subPestañaCrucigramas === "crossmath"
+                        ? "bg-emerald-600 text-white shadow-md shadow-emerald-500/25"
+                        : "glass text-slate-700 hover:bg-white"
+                    }`}
+                  >
+                    ⭕ Crossmath Numérico de Plazos (Imagen 3)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSubPestañaCrucigramas("crossip")}
+                    className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                      subPestañaCrucigramas === "crossip"
+                        ? "bg-violet-700 text-white shadow-md shadow-violet-500/25"
+                        : "glass text-slate-700 hover:bg-white"
+                    }`}
+                  >
+                    🧩 CrossIP Matricial (Signos & Patentes)
+                  </button>
+                </div>
+
+                <span className="text-xs font-bold text-slate-500 hidden sm:block">
+                  Ponderación: 3.0 / 10.0 Puntos de la Nota Final
+                </span>
+              </div>
+
+              {subPestañaCrucigramas === "crossmath" ? (
+                <CrossmathGame
+                  tablerosResueltos={estado.crossmathResueltos || []}
+                  onCompletarTablero={(id, xp) => {
+                    actualizar((prev) => completarCrossmath(prev, id, xp));
+                  }}
+                />
+              ) : (
+                <CrossIPGame
+                  tablerosResueltos={estado.tablerosResueltos}
+                  onCompletarTablero={(tableroId, xp, badgeId) => {
+                    actualizar((prev) => completarTableroCrossIP(prev, tableroId, xp, badgeId));
+                  }}
+                />
+              )}
+            </div>
+          )}
+
+          {/* PESTAÑA: DUELO TUG OF WAR (INSPIRADO EN IMAGEN 2) */}
+          {pestañaActiva === "duelo" && (
+            <TugOfWarGame
+              nombreEstudiante={estado.nombreEstudiante}
+              duelosGanados={estado.dueloVictorias || 0}
+              duelosJugados={estado.dueloPartidas || 0}
+              onFinalizarPartida={(gano, puntaje, xp) => {
+                actualizar((prev) => registrarResultadoDuelo(prev, gano, puntaje, xp));
+              }}
+            />
+          )}
+
+          {/* PESTAÑA: CUESTIONARIOS Y MICROAPRENDIZAJE */}
           {pestañaActiva === "misiones" && (
             <div>
               {/* MAPA DE DOMINIOS */}
               <div className="mb-4 flex items-end justify-between">
                 <div>
-                  <p className="text-xs font-semibold tracking-[0.2em] text-brand uppercase">Mapa de misiones</p>
+                  <p className="text-xs font-semibold tracking-[0.2em] text-brand uppercase">
+                    Mapa de evaluación diagnóstica
+                  </p>
                   <h2 className="font-display text-3xl font-bold text-ink">Dominios del Curso</h2>
                 </div>
                 <p className="text-sm text-ink-mute">
@@ -276,7 +467,7 @@ function Index() {
                 <div className="glass rounded-3xl p-6 shadow-lg shadow-brand/10 lg:col-span-3 border border-white/60">
                   <div className="mb-4 flex items-center gap-2">
                     <span className="rounded-full bg-brand px-2.5 py-1 text-[11px] font-bold tracking-wider text-brand-foreground uppercase">
-                      Microaprendizaje
+                      Fundamento Teórico
                     </span>
                     <span className="text-[11px] font-semibold text-ink-mute">
                       {dominio.id} · {dominio.nombre}
@@ -311,7 +502,7 @@ function Index() {
                 <div className="glass rounded-3xl p-6 shadow-lg shadow-brand/10 lg:col-span-2 border border-white/60">
                   <div className="mb-4 flex items-center justify-between">
                     <span className="rounded-full bg-accent-cyan px-2.5 py-1 text-[11px] font-bold tracking-wider text-ink uppercase">
-                      Microjuego Formativo
+                      Cuestionario Formativo
                     </span>
                     <span className="text-xs font-semibold text-ink-mute">
                       Pregunta {(indice % dominio.preguntas.length) + 1}/{dominio.preguntas.length}
@@ -376,17 +567,16 @@ function Index() {
             </div>
           )}
 
-          {/* PESTAÑA 3: SALÓN DE TROFEOS Y BADGES (TROPHY UI) */}
-          {pestañaActiva === "badges" && (
-            <BadgeShowcase
-              badgesDesbloqueados={estado.badgesDesbloqueados}
-              xp={estado.xp}
-              perfil={estado.perfil}
-              racha={estado.racha}
+          {/* PESTAÑA: CALIFICACIÓN OFICIAL (10 PUNTOS) & REGISTRO DE PARTICIPANTE */}
+          {pestañaActiva === "calificacion" && (
+            <GradeEvaluationReport
+              estado={estado}
+              onActualizarEstado={actualizar}
+              onNavegarActividad={(tab) => setPestañaActiva(tab as PestañaPrincipal)}
             />
           )}
 
-          {/* PESTAÑA 4: DIAGNÓSTICO IAM-360 */}
+          {/* PESTAÑA: LABORATORIO IAM-360 */}
           {pestañaActiva === "iam360" && (
             <IAM360Lab
               inventario={estado.inventarioIAM}
@@ -397,18 +587,51 @@ function Index() {
               objeto={estado.objeto}
             />
           )}
+
+          {/* PESTAÑA: TROFEOS & PILARES DE GAMIFICACIÓN */}
+          {pestañaActiva === "badges" && (
+            <div className="space-y-8">
+              <GamificationPillars
+                estado={estado}
+                onNavegar={(tab) => setPestañaActiva(tab as PestañaPrincipal)}
+                onEditarPerfil={() => setPestañaActiva("calificacion")}
+              />
+
+              <BadgeShowcase
+                badgesDesbloqueados={estado.badgesDesbloqueados}
+                xp={estado.xp}
+                perfil={estado.perfil}
+                racha={estado.racha}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function Onboarding({ onListo }: { onListo: (perfil: Perfil, objeto: Objeto) => void }) {
+function Onboarding({
+  onListo,
+}: {
+  onListo: (
+    nombreEstudiante: string,
+    identificacion: string,
+    institucion: string,
+    perfil: Perfil,
+    objeto: Objeto
+  ) => void;
+}) {
+  const [nombre, setNombre] = useState("");
+  const [identificacion, setIdentificacion] = useState("");
+  const [institucion, setInstitucion] = useState("");
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [objeto, setObjeto] = useState<Objeto | null>(null);
 
+  const puedeContinuar = Boolean(nombre.trim() && perfil && objeto);
+
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50">
       <Orbes />
       <div className="relative z-10 mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-12">
         <div className="glass rounded-3xl p-8 shadow-2xl shadow-brand/15 border border-white/70">
@@ -418,17 +641,67 @@ function Onboarding({ onListo }: { onListo: (perfil: Perfil, objeto: Objeto) => 
             </div>
             <div>
               <p className="font-display leading-none font-bold tracking-tight text-ink text-lg">
-                IP QUEST 360
+                IP QUEST 360 · SERIOUS LEARNING GAME
               </p>
               <p className="text-xs text-ink-mute">
-                Serious Learning Game & Intangible Asset Management Lab
+                Corporación de Promoción Económica CONQUITO · CITT
               </p>
             </div>
           </div>
 
-          <p className="text-xs font-semibold tracking-[0.2em] text-brand uppercase">Paso 1 de 2 · Perfil</p>
-          <h1 className="mt-1 font-display text-2xl font-bold text-ink">¿Cuál es tu rol en el curso?</h1>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mb-6 rounded-2xl bg-brand/5 p-4 border border-brand/15 text-xs text-ink-soft leading-relaxed">
+            <strong className="text-brand">Registro de Participación para Acreditación Docente:</strong>{" "}
+            Ingresa tus datos personales e institucionales para que tus actividades web queden registradas con tu nombre y puedas obtener tu nota oficial sobre 10.0 puntos.
+          </div>
+
+          <p className="text-xs font-semibold tracking-[0.2em] text-brand uppercase">
+            Paso 1 de 3 · Identificación del Estudiante
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                Nombres y Apellidos Completos *
+              </label>
+              <input
+                type="text"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                placeholder="Ej: Ing. Carlos Andrés Morales"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                Cédula / Código de Estudiante
+              </label>
+              <input
+                type="text"
+                value={identificacion}
+                onChange={(e) => setIdentificacion(e.target.value)}
+                placeholder="Ej: 1719283746"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                Institución / Emprendimiento / Carrera
+              </label>
+              <input
+                type="text"
+                value={institucion}
+                onChange={(e) => setInstitucion(e.target.value)}
+                placeholder="Ej: Universidad Central / Lab Biotec"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+              />
+            </div>
+          </div>
+
+          <p className="text-xs font-semibold tracking-[0.2em] text-brand uppercase mt-6">
+            Paso 2 de 3 · Rol o Perfil
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
             {PERFILES.map((p) => (
               <button
                 key={p}
@@ -445,9 +718,10 @@ function Onboarding({ onListo }: { onListo: (perfil: Perfil, objeto: Objeto) => 
             ))}
           </div>
 
-          <p className="text-xs font-semibold tracking-[0.2em] text-accent-cyan uppercase mt-8">Paso 2 de 2 · Objeto</p>
-          <h2 className="mt-1 font-display text-2xl font-bold text-ink">¿Sobre qué objeto trabajarás tu diagnóstico?</h2>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <p className="text-xs font-semibold tracking-[0.2em] text-accent-cyan uppercase mt-6">
+            Paso 3 de 3 · Objeto Tecnológico de Diagnóstico
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
             {OBJETOS.map((o) => (
               <button
                 key={o}
@@ -466,14 +740,19 @@ function Onboarding({ onListo }: { onListo: (perfil: Perfil, objeto: Objeto) => 
 
           <button
             type="button"
-            disabled={!perfil || !objeto}
-            onClick={() => perfil && objeto && onListo(perfil, objeto)}
-            className="mt-8 w-full rounded-2xl bg-gradient-to-r from-brand via-violet-600 to-accent-cyan px-4 py-4 font-display font-bold text-white shadow-xl shadow-brand/30 disabled:opacity-40 transition-all hover:scale-105 active:scale-95"
+            disabled={!puedeContinuar}
+            onClick={() =>
+              puedeContinuar &&
+              perfil &&
+              objeto &&
+              onListo(nombre.trim(), identificacion.trim(), institucion.trim(), perfil, objeto)
+            }
+            className="mt-8 w-full rounded-2xl bg-gradient-to-r from-brand via-violet-600 to-accent-cyan px-4 py-4 font-display font-bold text-white shadow-xl shadow-brand/30 disabled:opacity-40 transition-all hover:scale-102 active:scale-98"
           >
-            Iniciar el Laboratorio de Competencias 🚀
+            Iniciar Serious Learning Game & Laboratorio de Competencias 🚀
           </button>
           <p className="mt-3 text-center text-[11px] text-ink-mute">
-            Transfertech IP Value · Tu progreso se almacena de forma segura en tu navegador.
+            CONQUITO · CITT · Tu progreso se almacena de forma segura en tu navegador y es auditable por el docente.
           </p>
         </div>
       </div>
